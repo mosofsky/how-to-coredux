@@ -1,5 +1,3 @@
 <resources>
-    <string name="app_name">CoReduxSideEffectRaceCondition</string>
-    <string name="do_async_tasks" translatable="false">Do Async Tasks</string>
-    <string name="add_delay" translatable="false">Add Delay</string>
+    <string name="app_name">How to CoRedux</string>
 </resources>

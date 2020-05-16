@@ -1,4 +1,4 @@
-package com.locuslabs.crserc
+package com.howto.coredux
 
 import org.junit.Test
 
