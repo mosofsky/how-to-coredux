@@ -6,11 +6,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.howto.coredux.HowToReduxAction.Initialize
+import com.howto.coredux.HowToReduxAction.Initialize_Start
 import java.net.URL
 
 class MainActivity : AppCompatActivity() {
-    private val howToViewModel by viewModels<HowToViewModel>()
+    val howToViewModel by viewModels<HowToViewModel>()
 
     private lateinit var videoListRecyclerView: RecyclerView
 
@@ -27,19 +27,19 @@ class MainActivity : AppCompatActivity() {
 
     private fun initRedux() {
         howToViewModel.dispatchAction(
-            Initialize(
+            Initialize_Start(
                 listOf(
                     HowToVideo(
                         "How To Properly Wash the Dishes",
-                        URL("https://www.youtube.com/watch?v=fRS3v2DId4w")
+                        "https://www.youtube.com/embed/fRS3v2DId4w"
                     ),
                     HowToVideo(
                         "How To Make Bubble Tea",
-                        URL("https://www.youtube.com/watch?v=3sy8-9f-198")
+                        "https://www.youtube.com/embed/3sy8-9f-198"
                     ),
                     HowToVideo(
                         "How To Make Salsa",
-                        URL("https://www.youtube.com/watch?v=rozhHGDEUw0")
+                        "https://www.youtube.com/embed/rozhHGDEUw0"
                     )
                 )
             )
@@ -51,10 +51,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initUIObservers() {
-        howToViewModel.isInitializationInProgress.observe(this, Observer {
+        howToViewModel.isInitializeInProgress.observe(this, Observer {
             if (it) {
                 initRecyclerView()
-                howToViewModel.dispatchAction(HowToReduxAction.Initialized)
+                howToViewModel.dispatchAction(HowToReduxAction.Initialize_Finish)
             }
         })
     }

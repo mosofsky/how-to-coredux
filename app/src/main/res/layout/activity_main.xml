@@ -22,4 +22,14 @@
         tools:itemCount="20"
         tools:listitem="@layout/video_list_item" />
 
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/playVideoFragment"
+        android:name="com.howto.coredux.PlayVideoFragment"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

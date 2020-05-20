@@ -5,6 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.howto.coredux.HowToReduxAction.*
 
 class HowToVideoListAdapter(val mainActivity: MainActivity, private val howToVideos: List<HowToVideo>) : RecyclerView.Adapter<HowToVideoViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HowToVideoViewHolder {
@@ -24,6 +25,9 @@ class HowToVideoListAdapter(val mainActivity: MainActivity, private val howToVid
     override fun onBindViewHolder(howToVideoViewHolder: HowToVideoViewHolder, position: Int) {
         val howToVideo = howToVideos[position]
         howToVideoViewHolder.videoNameTextView.text = howToVideo.name
+        howToVideoViewHolder.itemView.setOnClickListener {
+            mainActivity.howToViewModel.dispatchAction(ShowVideoFragment_Start(howToVideo))
+        }
     }
 }
 

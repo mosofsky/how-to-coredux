@@ -7,11 +7,12 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.freeletics.coredux.*
 import com.freeletics.coredux.log.android.AndroidLogSink
-import com.howto.coredux.HowToReduxAction.Initialize
-import com.howto.coredux.HowToReduxAction.Initialized
+import com.howto.coredux.HowToReduxAction.Initialize_Start
+import com.howto.coredux.HowToReduxAction.Initialize_Finish
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.SendChannel
+import com.howto.coredux.HowToReduxAction.*
 import kotlin.coroutines.CoroutineContext
 
 class HowToViewModel(application: Application) : AndroidViewModel(application), CoroutineScope {
@@ -22,7 +23,9 @@ class HowToViewModel(application: Application) : AndroidViewModel(application), 
 
     val state: LiveData<HowToReduxState> = mutableState
 
-    val isInitializationInProgress = MutableLiveData<Boolean>()
+    val isInitializeInProgress = MutableLiveData<Boolean>()
+    val isShowVideoFragmentInProgress = MutableLiveData<Boolean>()
+    val isLoadVideoInProgress = MutableLiveData<Boolean>()
 
     private val loggers = setOf(AndroidLogSink())
 
@@ -40,13 +43,52 @@ class HowToViewModel(application: Application) : AndroidViewModel(application), 
 
                 when (action) {
 
-                    is Initialize, Initialized -> {
+                    is Initialize_Start, Initialize_Finish -> {
                         maybeUpdate(
-                            isInitializationInProgress,
-                            s._isInitializationInProgress
+                            isInitializeInProgress,
+                            s._isInitializeInProgress
                         )
                     }
 
+                    is ShowVideoFragment_Start, ShowVideoFragment_Finish -> {
+                        maybeUpdate(
+                            isShowVideoFragmentInProgress,
+                            s._isShowVideoFragmentInProgress
+                        )
+                    }
+
+                    LoadVideo_Start, LoadVideo_Finish -> {
+                        maybeUpdate(
+                            isLoadVideoInProgress,
+                            s._isLoadVideoInProgress
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    private val espressoTestIdlingResourceSideEffect = object : SideEffect<HowToReduxState, HowToReduxAction> {
+        override val name: String = "updateUISideEffect"
+
+        override fun CoroutineScope.start(
+            input: ReceiveChannel<HowToReduxAction>,
+            stateAccessor: StateAccessor<HowToReduxState>,
+            output: SendChannel<HowToReduxAction>,
+            logger: SideEffectLogger
+        ): Job = launch(context = CoroutineName(name)) {
+            for (action in input) {
+                val espressoTestIdlingResource = (application as HowToApplication).espressoTestIdlingResource
+
+                when (action) {
+
+                    is Initialize_Start, is ShowVideoFragment_Start, LoadVideo_Start -> {
+                        espressoTestIdlingResource.increment()
+                    }
+
+                    Initialize_Finish, ShowVideoFragment_Finish, LoadVideo_Finish -> {
+                        espressoTestIdlingResource.decrement()
+                    }
                 }
             }
         }
@@ -73,7 +115,7 @@ class HowToViewModel(application: Application) : AndroidViewModel(application), 
         name = "MyRedux Store",
         initialState = HowToReduxState(),
         logSinks = loggers.toList(),
-        sideEffects = listOf(updateUISideEffect),
+        sideEffects = listOf(updateUISideEffect, espressoTestIdlingResourceSideEffect),
         reducer = ::reducer
     ).also {
         it.subscribeToChangedStateUpdates { newState: HowToReduxState ->
@@ -87,15 +129,34 @@ class HowToViewModel(application: Application) : AndroidViewModel(application), 
         Log.d(t, "reduce $action")
 
         return when (action) {
-            is Initialize -> {
+            is Initialize_Start -> {
                 state.copy(
                     howToVideos = action.howToVideos,
-                    _isInitializationInProgress = true
+                    _isInitializeInProgress = true
                 )
             }
 
-            Initialized -> {
-                state.copy(_isInitializationInProgress = false)
+            Initialize_Finish -> {
+                state.copy(_isInitializeInProgress = false)
+            }
+
+            is ShowVideoFragment_Start -> {
+                state.copy(
+                    howToVideoShown = action.howToVideo,
+                    _isShowVideoFragmentInProgress = true
+                )
+            }
+
+            ShowVideoFragment_Finish -> {
+                state.copy(_isShowVideoFragmentInProgress = false)
+            }
+
+            LoadVideo_Start -> {
+                state.copy(_isLoadVideoInProgress = true)
+            }
+
+            LoadVideo_Finish -> {
+                state.copy(_isLoadVideoInProgress = true)
             }
         }
     }
