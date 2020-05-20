@@ -46,7 +46,9 @@ class PlayVideoFragment : Fragment() {
             }
 
             override fun onPageFinished(view: WebView?, url: String?) {
-                howToViewModel.dispatchAction(LoadVideo_Finish)
+                if (null != url && url != ABOUT_URL) {
+                    howToViewModel.dispatchAction(LoadVideo_Finish)
+                }
             }
         }
         val ws: WebSettings = playVideoWebView.settings
@@ -64,19 +66,31 @@ class PlayVideoFragment : Fragment() {
             }
         })
 
+        howToViewModel.isHideVideoFragmentInProgress.observe(viewLifecycleOwner, Observer {
+            if (it) {
+                playVideoWebView.loadUrl(ABOUT_URL)
+                requireView().visibility = View.GONE
+                howToViewModel.dispatchAction(HideVideoFragment_Finish)
+            }
+        })
+
         howToViewModel.isLoadVideoInProgress.observe(viewLifecycleOwner, Observer {
             if (it) {
-                loadVideoAsynchronously()
+                maybeLoadVideoAsynchronously()
             }
         })
     }
 
-    private fun loadVideoAsynchronously() {
+    private fun maybeLoadVideoAsynchronously() {
         val howToVideoShown = howToViewModel.state.value!!.howToVideoShown!!
 
         val videoStr =
             "<html><body>${howToVideoShown.name}<br><iframe width=\"380\" height=\"300\" src=\"${howToVideoShown.url}\" frameborder=\"0\" allowfullscreen></iframe></body></html>"
 
-        playVideoWebView.loadData(videoStr, "text/html", "utf-8")
+        if (null == playVideoWebView.url || !playVideoWebView.url.endsWith(videoStr)) {
+            playVideoWebView.loadData(videoStr, "text/html", "utf-8")
+        } else {
+            howToViewModel.dispatchAction(LoadVideo_Finish)
+        }
     }
 }

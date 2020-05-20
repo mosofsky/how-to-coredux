@@ -3,6 +3,7 @@ package com.howto.coredux
 import androidx.recyclerview.widget.RecyclerView
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.IdlingRegistry
+import androidx.test.espresso.action.Tap
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.contrib.RecyclerViewActions
@@ -16,6 +17,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.ActivityTestRule
 import it.xabaras.android.espresso.recyclerviewchildactions.RecyclerViewChildActions
 import org.hamcrest.CoreMatchers.containsString
+import org.hamcrest.CoreMatchers.not
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -80,5 +82,40 @@ class MainActivityTest {
         onView(withId(R.id.playVideoWebView)).check(matches(isDisplayed()))
 
         onWebView().check(webMatches(getCurrentUrl(), containsString("3sy8-9f-198")))
+    }
+
+    @Test
+    fun closeHowToVideo() {
+        onView(withText("How To Make Bubble Tea")).perform(click())
+
+        onView(withId(R.id.rootViewGroup)).perform(clickXY(Tap.SINGLE, 0f, 0f))
+
+        onView(withId(R.id.playVideoFragment)).check(matches(not(isDisplayed())))
+    }
+
+    @Test
+    fun tapVideoListWhenNoVideoPlayingShouldDoNothing() {
+        onView(withId(R.id.rootViewGroup)).perform(clickXY(Tap.SINGLE, 0f, 0f))
+
+        onView(withId(R.id.playVideoFragment)).check(matches(not(isDisplayed())))
+    }
+
+    @Test
+    fun tapAnotherHowToVideoInList() {
+        onView(withText("How To Make Bubble Tea")).perform(click())
+
+        onView(withId(R.id.playVideoFragment)).check(matches(isDisplayed()))
+
+        onView(withId(R.id.playVideoWebView)).check(matches(isDisplayed()))
+
+        onWebView().check(webMatches(getCurrentUrl(), containsString("3sy8-9f-198")))
+
+        onView(withText("How To Properly Wash the Dishes")).perform(click())
+
+        onView(withId(R.id.playVideoFragment)).check(matches(isDisplayed()))
+
+        onView(withId(R.id.playVideoWebView)).check(matches(isDisplayed()))
+
+        onWebView().check(webMatches(getCurrentUrl(), containsString("fRS3v2DId4w")))
     }
 }

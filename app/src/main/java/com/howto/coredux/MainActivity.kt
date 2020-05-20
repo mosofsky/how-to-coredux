@@ -1,17 +1,18 @@
 package com.howto.coredux
 
 import android.os.Bundle
+import android.view.ViewGroup
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.howto.coredux.HowToReduxAction.Initialize_Start
-import java.net.URL
+import com.howto.coredux.HowToReduxAction.*
 
 class MainActivity : AppCompatActivity() {
     val howToViewModel by viewModels<HowToViewModel>()
 
+    private lateinit var rootViewGroup: ViewGroup
     private lateinit var videoListRecyclerView: RecyclerView
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -23,6 +24,8 @@ class MainActivity : AppCompatActivity() {
         initViewIds()
 
         initUIObservers()
+
+        initEventListeners()
     }
 
     private fun initRedux() {
@@ -47,6 +50,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initViewIds() {
+        rootViewGroup = findViewById(R.id.rootViewGroup)
         videoListRecyclerView = findViewById(R.id.videoListRecyclerView)
     }
 
@@ -54,9 +58,15 @@ class MainActivity : AppCompatActivity() {
         howToViewModel.isInitializeInProgress.observe(this, Observer {
             if (it) {
                 initRecyclerView()
-                howToViewModel.dispatchAction(HowToReduxAction.Initialize_Finish)
+                howToViewModel.dispatchAction(Initialize_Finish)
             }
         })
+    }
+
+    private fun initEventListeners() {
+        rootViewGroup.setOnClickListener {
+            howToViewModel.dispatchAction(HideVideoFragment_Start)
+        }
     }
 
     private fun state(): HowToReduxState {

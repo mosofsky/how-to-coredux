@@ -7,12 +7,10 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.freeletics.coredux.*
 import com.freeletics.coredux.log.android.AndroidLogSink
-import com.howto.coredux.HowToReduxAction.Initialize_Start
-import com.howto.coredux.HowToReduxAction.Initialize_Finish
+import com.howto.coredux.HowToReduxAction.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.SendChannel
-import com.howto.coredux.HowToReduxAction.*
 import kotlin.coroutines.CoroutineContext
 
 class HowToViewModel(application: Application) : AndroidViewModel(application), CoroutineScope {
@@ -25,6 +23,7 @@ class HowToViewModel(application: Application) : AndroidViewModel(application), 
 
     val isInitializeInProgress = MutableLiveData<Boolean>()
     val isShowVideoFragmentInProgress = MutableLiveData<Boolean>()
+    val isHideVideoFragmentInProgress = MutableLiveData<Boolean>()
     val isLoadVideoInProgress = MutableLiveData<Boolean>()
 
     private val loggers = setOf(AndroidLogSink())
@@ -57,6 +56,13 @@ class HowToViewModel(application: Application) : AndroidViewModel(application), 
                         )
                     }
 
+                    HideVideoFragment_Start, HideVideoFragment_Finish -> {
+                        maybeUpdate(
+                            isHideVideoFragmentInProgress,
+                            s._isHideVideoFragmentInProgress
+                        )
+                    }
+
                     LoadVideo_Start, LoadVideo_Finish -> {
                         maybeUpdate(
                             isLoadVideoInProgress,
@@ -68,36 +74,38 @@ class HowToViewModel(application: Application) : AndroidViewModel(application), 
         }
     }
 
-    private val espressoTestIdlingResourceSideEffect = object : SideEffect<HowToReduxState, HowToReduxAction> {
-        override val name: String = "updateUISideEffect"
+    private val espressoTestIdlingResourceSideEffect =
+        object : SideEffect<HowToReduxState, HowToReduxAction> {
+            override val name: String = "updateUISideEffect"
 
-        override fun CoroutineScope.start(
-            input: ReceiveChannel<HowToReduxAction>,
-            stateAccessor: StateAccessor<HowToReduxState>,
-            output: SendChannel<HowToReduxAction>,
-            logger: SideEffectLogger
-        ): Job = launch(context = CoroutineName(name)) {
-            for (action in input) {
-                val espressoTestIdlingResource = (application as HowToApplication).espressoTestIdlingResource
+            override fun CoroutineScope.start(
+                input: ReceiveChannel<HowToReduxAction>,
+                stateAccessor: StateAccessor<HowToReduxState>,
+                output: SendChannel<HowToReduxAction>,
+                logger: SideEffectLogger
+            ): Job = launch(context = CoroutineName(name)) {
+                for (action in input) {
+                    val espressoTestIdlingResource =
+                        (application as HowToApplication).espressoTestIdlingResource
 
-                when (action) {
+                    when (action) {
 
-                    is Initialize_Start, is ShowVideoFragment_Start, LoadVideo_Start -> {
-                        espressoTestIdlingResource.increment()
-                    }
+                        is Initialize_Start, is ShowVideoFragment_Start, LoadVideo_Start, HideVideoFragment_Start -> {
+                            espressoTestIdlingResource.increment()
+                        }
 
-                    Initialize_Finish, ShowVideoFragment_Finish, LoadVideo_Finish -> {
-                        espressoTestIdlingResource.decrement()
+                        Initialize_Finish, ShowVideoFragment_Finish, LoadVideo_Finish, HideVideoFragment_Finish -> {
+                            espressoTestIdlingResource.decrement()
+                        }
                     }
                 }
             }
         }
-    }
 
     /**
      * [isXInProgress] remains null until we're ready to set it to true to trigger a UI event
      *
-     * Once non-null, always propagate changes to [_isXInProgress] to [isXInProgress]
+     * Once non-null, always propagate the [_isXInProgress] changes to [isXInProgress]
      */
     private fun maybeUpdate(isXInProgress: MutableLiveData<Boolean>, _isXInProgress: Boolean) {
         if (null == isXInProgress.value) {
@@ -151,12 +159,23 @@ class HowToViewModel(application: Application) : AndroidViewModel(application), 
                 state.copy(_isShowVideoFragmentInProgress = false)
             }
 
+            HideVideoFragment_Start -> {
+                state.copy(
+                    howToVideoShown = null,
+                    _isHideVideoFragmentInProgress = true
+                )
+            }
+
+            HideVideoFragment_Finish -> {
+                state.copy(_isHideVideoFragmentInProgress = false)
+            }
+
             LoadVideo_Start -> {
                 state.copy(_isLoadVideoInProgress = true)
             }
 
             LoadVideo_Finish -> {
-                state.copy(_isLoadVideoInProgress = true)
+                state.copy(_isLoadVideoInProgress = false)
             }
         }
     }

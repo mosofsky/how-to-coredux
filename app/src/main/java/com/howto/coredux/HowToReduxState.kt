@@ -6,5 +6,6 @@ data class HowToReduxState(
 
     val _isInitializeInProgress: Boolean = IS_X_IN_PROGRESS_INIT,
     val _isShowVideoFragmentInProgress: Boolean = IS_X_IN_PROGRESS_INIT,
+    val _isHideVideoFragmentInProgress: Boolean = IS_X_IN_PROGRESS_INIT,
     val _isLoadVideoInProgress: Boolean = IS_X_IN_PROGRESS_INIT
 )

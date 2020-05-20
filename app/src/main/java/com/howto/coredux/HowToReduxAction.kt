@@ -9,6 +9,8 @@ sealed class HowToReduxAction {
 
     data class ShowVideoFragment_Start(val howToVideo: HowToVideo) : HowToReduxAction()
     object ShowVideoFragment_Finish : HowToReduxAction()
+    object HideVideoFragment_Start : HowToReduxAction()
+    object HideVideoFragment_Finish : HowToReduxAction()
 
     object LoadVideo_Start : HowToReduxAction()
     object LoadVideo_Finish : HowToReduxAction()
