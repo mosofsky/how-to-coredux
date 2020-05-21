@@ -43,28 +43,28 @@ class HowToViewModel(application: Application) : AndroidViewModel(application), 
                 when (action) {
 
                     is Initialize_Start, Initialize_Finish -> {
-                        maybeUpdate(
+                        maybeUpdateLiveData(
                             isInitializeInProgress,
                             s._isInitializeInProgress
                         )
                     }
 
                     is ShowVideoFragment_Start, ShowVideoFragment_Finish -> {
-                        maybeUpdate(
+                        maybeUpdateLiveData(
                             isShowVideoFragmentInProgress,
                             s._isShowVideoFragmentInProgress
                         )
                     }
 
                     HideVideoFragment_Start, HideVideoFragment_Finish -> {
-                        maybeUpdate(
+                        maybeUpdateLiveData(
                             isHideVideoFragmentInProgress,
                             s._isHideVideoFragmentInProgress
                         )
                     }
 
                     LoadVideo_Start, LoadVideo_Finish -> {
-                        maybeUpdate(
+                        maybeUpdateLiveData(
                             isLoadVideoInProgress,
                             s._isLoadVideoInProgress
                         )
@@ -107,7 +107,10 @@ class HowToViewModel(application: Application) : AndroidViewModel(application), 
      *
      * Once non-null, always propagate the [_isXInProgress] changes to [isXInProgress]
      */
-    private fun maybeUpdate(isXInProgress: MutableLiveData<Boolean>, _isXInProgress: Boolean) {
+    private fun maybeUpdateLiveData(
+        isXInProgress: MutableLiveData<Boolean>,
+        _isXInProgress: Boolean
+    ) {
         if (null == isXInProgress.value) {
             if (_isXInProgress) {
                 isXInProgress.value = _isXInProgress
